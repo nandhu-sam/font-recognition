@@ -53,19 +53,11 @@ def mkGlyphs(glyphs, font, db_font_dir,
             cv.imwrite(str(glyph_dir / img_name), new_img)
 
 
-FONT_SIZE_PT = 18
+if __name__ == '__main__':
+    FONT_SIZE_PT = 18
 
-font_path = plib.Path('font-resources')
-all_fonts = (ImageFont.truetype(str(f), FONT_SIZE_PT)
-             for f in font_path.glob('*.ttf'))
-all_glyphs = string.ascii_letters
-mkDatabase(all_fonts, all_glyphs)
-
-# FONT_SIZE_PT: int = 14
-#
-# font_path = plib.Path('font-resources')
-# all_fonts = (ImageFont.truetype(str(f), FONT_SIZE_PT)
-#              for f in font_path.glob('*.ttf'))
-#
-# all_glyphs = string.ascii_letters
-#
+    font_path = plib.Path('font-resources')
+    all_fonts = (ImageFont.truetype(str(f), FONT_SIZE_PT)
+                 for f in font_path.glob('*.ttf'))
+    all_glyphs = string.ascii_letters
+    mkDatabase(all_fonts, all_glyphs)
