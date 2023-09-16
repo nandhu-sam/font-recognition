@@ -42,7 +42,6 @@ def mkGlyphs(glyphs, font, db_font_dir,
             rotMatrix = cv.getRotationMatrix2D(center, rot, scale)
             new_img = cv.warpAffine(img, rotMatrix, IMG_SHAPE,
                                     borderValue=(255, 255, 255),
-
                                     borderMode=cv.BORDER_CONSTANT)
 
             img_name = (glyph + '-' + hex(ord(glyph)) +
@@ -51,6 +50,11 @@ def mkGlyphs(glyphs, font, db_font_dir,
                         '.png')
 
             cv.imwrite(str(glyph_dir / img_name), new_img)
+            print(str(glyph_dir / img_name))
+
+
+def getFontPaths(resource_file: plib.Path):
+    return sorted(resource_file.glob('*.ttf'), key=lambda p:  p.name[:2])
 
 
 if __name__ == '__main__':
@@ -58,6 +62,6 @@ if __name__ == '__main__':
 
     font_path = plib.Path('font-resources')
     all_fonts = (ImageFont.truetype(str(f), FONT_SIZE_PT)
-                 for f in font_path.glob('*.ttf'))
-    all_glyphs = string.ascii_letters
+                 for f in getFontPaths(font_path))
+    all_glyphs = string.ascii_letters + string.digits
     mkDatabase(all_fonts, all_glyphs)
