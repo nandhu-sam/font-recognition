@@ -1,48 +1,29 @@
-import itertools
-import pathlib as plib
-import string
+#!/usr/bin/python3
 
+import itertools
+import math
+import pathlib as path
+import random
+import string
+from typing import List
+
+import cv2 as cv
+import numpy as np
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
-import numpy as np
-import cv2 as cv
 
+def mkDataset(ds_root: path.Path, fonts, glyphs, rotations=(0.0,), scales=(1.0,)):
+    ds_root = ds_root / 'train'
+    ds_root.mkdir(parents=True, exist_ok=True)
 
-def mkDataset(ds_root: plib.Path, fonts, glyphs,
-              rotations=(0.0,),
-              scales=(1.0,)):
-    glyph_ds_dir = ds_root / 'glyphs'
-    # fonts_ds_dir = ds_root/'fonts'
-
-    glyph_ds_dir.mkdir(parents=True, exist_ok=True)
-    # fonts_ds_dir.mkdir(parents=True, exist_ok=True)
-
-    mkGlyphDS(glyph_ds_dir, fonts, glyphs, rotations, scales)
-    # mkFontDS(fonts_ds_dir, fonts, glyphs, rotations, scales)
-
-
-def mkGlyphDS(ds_root: plib.Path, fonts, glyphs, rotations=(0.0,), scales=(1.0,)):
     for glyph in glyphs:
         glyph_dir = ds_root / (glyph + '-U+' + hex(ord(glyph))[2:])
         glyph_dir.mkdir(parents=True, exist_ok=True)
 
         for font_ix, font in enumerate(fonts):
             out_dir = glyph_dir / (str(font_ix).zfill(2))
-            out_dir.mkdir(parents=True, exist_ok=True)
-            genGlyphImgs(out_dir, font, font_ix, glyph, rotations, scales)
-
-
-def mkFontDS(ds_root: plib.Path, fonts, glyphs,
-             rotations=(0.0,),
-             scales=(1.0,)):
-    for font_ix, font in enumerate(fonts):
-        font_dir = ds_root / (str(font_ix).zfill(2))
-        font_dir.mkdir(parents=True, exist_ok=True)
-
-        for glyph in glyphs:
-            out_dir = font_dir / (glyph + '-U+' + hex(glyph)[2:])
             out_dir.mkdir(parents=True, exist_ok=True)
             genGlyphImgs(out_dir, font, font_ix, glyph, rotations, scales)
 
@@ -77,7 +58,43 @@ def genGlyphImgs(target_dir, font, font_ix, glyph, rotations, scales):
         cv.imwrite(str(target_dir / img_name), new_img)
 
 
-def getFontPaths(resource_file: plib.Path):
+def splitTrainTest(ds_root: path.Path, test_ratio=0.2):
+    input_dir = ds_root / 'train'
+    if not input_dir.exists():
+        raise FileNotFoundError(input_dir)
+
+    test_dir = ds_root / 'test'
+    test_dir.mkdir(parents=True, exist_ok=True)
+
+    for glyph_dir in input_dir.iterdir():
+        for font_dir in glyph_dir.iterdir():
+            images = list(font_dir.iterdir())
+            n_images = len(images)
+
+            test_imgs = selectKfrom(images, math.floor(n_images * test_ratio))
+            moveImgs(glyph_dir, font_dir, test_imgs, test_dir)
+
+
+def selectKfrom(seq: list, k: int):
+    selected = []
+    for _ in range(k):
+        selection = random.choice(seq)
+        selected.append(selection)
+        seq.remove(selection)
+    return selected
+
+
+def moveImgs(glyph_dir: path.Path,
+             font_dir: path.Path,
+             images: List[path.Path],
+             test_dir: path.Path):
+    for img in images:
+        new_path = test_dir / glyph_dir.name / font_dir.name
+        new_path.mkdir(parents=True, exist_ok=True)
+        img.rename(new_path / img.name)
+
+
+def getFontPaths(resource_file: path.Path):
     return sorted(resource_file.glob('*.ttf'), key=lambda p: p.name[:2])
 
 
@@ -86,8 +103,8 @@ if __name__ == '__main__':
     ROTATIONS = (-15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0)
     SCALES = (1.0, 0.9, 0.8)
 
-    font_path = plib.Path('font-resources')
-    ds_path = plib.Path('dataset')
+    font_path = path.Path('font-resources')
+    ds_path = path.Path('dataset')
 
     font_path.mkdir(parents=True, exist_ok=True)
     ds_path.mkdir(parents=True, exist_ok=True)
@@ -98,3 +115,4 @@ if __name__ == '__main__':
     mkDataset(ds_path, all_fonts, all_glyphs,
               rotations=ROTATIONS,
               scales=SCALES)
+    splitTrainTest(ds_path, 0.2)
