@@ -5,16 +5,12 @@ import random
 import string
 
 import matplotlib.pyplot as plt
-import numpy as np
-from tensorflow import math as tfmath
-
 
 import keras.models as models
 import keras.layers as layers
 import keras.preprocessing as preprocessing
 
-all_glyphs = [c+'-U+'+hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
-
+all_glyphs = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
 
 train_ds, validation_ds = preprocessing.image_dataset_from_directory(
     path.Path('dataset') / 'train',
@@ -66,9 +62,9 @@ model = models.Sequential(
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
-model.fit(train_ds,
-          epochs=40,
-          validation_data=validation_ds
-          )
+history = model.fit(train_ds,
+                    epochs=400,
+                    validation_data=validation_ds)
 
-print(model.evaluate(test_ds))
+model_save_path = path.Path('letter-model')
+model.save(model_save_path)
