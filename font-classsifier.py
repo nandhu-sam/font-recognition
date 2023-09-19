@@ -4,6 +4,8 @@ import pathlib as path
 import random
 import string
 
+import tensorflow as tf
+
 import keras.layers as layers
 import keras.models as models
 import keras.saving as saving
@@ -14,7 +16,7 @@ all_font_classes = [str(n).zfill(2) for n in range(10)]
 
 IMG_SIZE = (32, 32)
 
-
+tf.logging
 def fontClassifier(glyph: str, ds_root: path.Path):
 
     train_ds = preprocessing.image_dataset_from_directory(
@@ -37,7 +39,7 @@ def fontClassifier(glyph: str, ds_root: path.Path):
         image_size=IMG_SIZE
     )
 
-    model = models.Sequential(
+    font_clf_model = models.Sequential(
         [
             layers.Input(IMG_SIZE + (1,)),
             layers.Rescaling(1.0 / 255),
@@ -58,13 +60,13 @@ def fontClassifier(glyph: str, ds_root: path.Path):
         ],
         name='font-train-pipe-' + glyph.replace('+','_')
     )
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
-    model.summary()
+    font_clf_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
+    font_clf_model.summary()
 
     epochs = 150
-    history = model.fit(train_ds, epochs=epochs, validation_data=test_ds)
+    history = font_clf_model.fit(train_ds, epochs=epochs, validation_data=test_ds)
 
-    return history, model
+    return history, font_clf_model
 
 
 if __name__ == '__main__':
