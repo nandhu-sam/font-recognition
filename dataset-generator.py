@@ -5,10 +5,12 @@ import math
 import pathlib as path
 import random
 import string
+
 from typing import List
 
 import cv2 as cv
 import numpy as np
+
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
