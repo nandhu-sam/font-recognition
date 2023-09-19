@@ -14,6 +14,7 @@ import keras.layers as layers
 import keras.preprocessing as preprocessing
 
 all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
+IMG_SIZE = (32, 32)
 
 train_ds, validation_ds = preprocessing.image_dataset_from_directory(
     path.Path('dataset') / 'train',
@@ -24,8 +25,7 @@ train_ds, validation_ds = preprocessing.image_dataset_from_directory(
     shuffle=True,
     seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
     color_mode='grayscale',
-    image_size=(32, 32),
-
+    image_size=IMG_SIZE,
 )
 
 test_ds = preprocessing.image_dataset_from_directory(
@@ -35,14 +35,14 @@ test_ds = preprocessing.image_dataset_from_directory(
     shuffle=True,
     seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
     color_mode='grayscale',
-    image_size=(32, 32)
+    image_size=IMG_SIZE
 )
 
 rescale = models.Sequential([layers.Input((32, 32, 1)), layers.Rescaling(1.0 / 255)])
 
 model = models.Sequential(
     [
-        layers.Input((32, 32, 1)),
+        layers.Input(IMG_SIZE+(1,)),
         layers.Rescaling(1.0 / 255),
 
         layers.RandomZoom(0.2),
@@ -57,9 +57,9 @@ model = models.Sequential(
         layers.Flatten(),
 
         layers.Dense(units=128, activation='relu'),
-        layers.Dense(units=62, activation='softmax')
+        layers.Dense(units=len(all_glyphs_classes), activation='softmax')
     ],
-    name='train-pipe'
+    name='letter-train-pipe'
 )
 
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
@@ -75,10 +75,9 @@ history = model.fit(train_ds,
 measures = np.c_[(history.history[k] for k in history.history.keys())]
 epoch_count = range(len(measures[0]))
 
-
-plt.plot(epoch_count, measures)
-
-model_save_path = path.Path('letter-model')
+model_save_path = path.Path('letter-clf-model')
 model.save(model_save_path)
 
+plt.plot(epoch_count, measures)
+plt.savefig(str(model_save_path / 'result.png'))
 

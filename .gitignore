@@ -1,3 +1,5 @@
 .idea/
 dataset/
 letter-model/
+letter-clf-model/
+font-clf-models/
