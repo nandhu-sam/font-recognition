@@ -16,7 +16,8 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 
-def mkDataset(ds_root: path.Path, fonts, glyphs, rotations=(0.0,), scales=(1.0,)):
+def mkDataset(ds_root: path.Path, fonts, glyphs,
+              img_shape=(64, 64), rotations=(0.0,), scales=(1.0,)):
     ds_root = ds_root / 'train'
     ds_root.mkdir(parents=True, exist_ok=True)
 
@@ -27,26 +28,25 @@ def mkDataset(ds_root: path.Path, fonts, glyphs, rotations=(0.0,), scales=(1.0,)
         for font_ix, font in enumerate(fonts):
             out_dir = glyph_dir / (str(font_ix).zfill(2))
             out_dir.mkdir(parents=True, exist_ok=True)
-            genGlyphImgs(out_dir, font, font_ix, glyph, rotations, scales)
+            genGlyphImgs(out_dir, font, font_ix, glyph, img_shape, rotations, scales)
 
 
-def genGlyphImgs(target_dir, font, font_ix, glyph, rotations, scales):
-    IMG_SHAPE = (32, 32)
+def genGlyphImgs(target_dir, font, font_ix, glyph, img_shape, rotations, scales):
+
     BGCOLOR = 255
     FGCOLOR = 0
 
     for rot, scale in itertools.product(rotations, scales):
-        glyph_img = Image.new('L', IMG_SHAPE, BGCOLOR)
+        glyph_img = Image.new('L', img_shape, BGCOLOR)
         glyph_draw = ImageDraw.Draw(glyph_img)
 
-        (wd, ht) = font.getbbox(glyph)[-2:]
-        xy = ((IMG_SHAPE[0] - wd) / 2, (IMG_SHAPE[1] - ht) / 2)
-        glyph_draw.text(xy, glyph, FGCOLOR, font=font)
+        xy = (img_shape[0]/2, img_shape[1]/2)
+        glyph_draw.text(xy, glyph, FGCOLOR, font=font, anchor='mm')
 
         img = np.array(glyph_img)
         center = (img.shape[0] / 2, img.shape[1] / 2)
         rotMatrix = cv.getRotationMatrix2D(center, rot, scale)
-        new_img = cv.warpAffine(img, rotMatrix, IMG_SHAPE,
+        new_img = cv.warpAffine(img, rotMatrix, img_shape,
                                 borderValue=(255, 255, 255),
                                 borderMode=cv.BORDER_CONSTANT)
 
@@ -65,6 +65,14 @@ def splitTrainTest(ds_root: path.Path, test_ratio=0.2):
     if not input_dir.exists():
         raise FileNotFoundError(input_dir)
 
+    def selectKfrom(seq: list, k: int):
+        selected = []
+        for _ in range(k):
+            selection = random.choice(seq)
+            selected.append(selection)
+            seq.remove(selection)
+        return selected
+
     test_dir = ds_root / 'test'
     test_dir.mkdir(parents=True, exist_ok=True)
 
@@ -75,15 +83,6 @@ def splitTrainTest(ds_root: path.Path, test_ratio=0.2):
 
             test_imgs = selectKfrom(images, math.floor(n_images * test_ratio))
             moveImgs(glyph_dir, font_dir, test_imgs, test_dir)
-
-
-def selectKfrom(seq: list, k: int):
-    selected = []
-    for _ in range(k):
-        selection = random.choice(seq)
-        selected.append(selection)
-        seq.remove(selection)
-    return selected
 
 
 def moveImgs(glyph_dir: path.Path,
@@ -100,21 +99,26 @@ def getFontPaths(resource_file: path.Path):
     return sorted(resource_file.glob('*.ttf'), key=lambda p: p.name[:2])
 
 
-if __name__ == '__main__':
-    FONT_SIZE_PT = 18
+def main(img_shape=(64, 64)):
+
+    FONT_SIZE_PX = np.floor(img_shape[0] * 0.8)
     ROTATIONS = (-15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0)
     SCALES = (1.0, 0.9, 0.8)
 
     font_path = path.Path('font-resources')
-    ds_path = path.Path('dataset')
+    if not font_path.exists():
+        raise FileNotFoundError(font_path)
 
-    font_path.mkdir(parents=True, exist_ok=True)
+    ds_path = path.Path('dataset')
     ds_path.mkdir(parents=True, exist_ok=True)
-    all_fonts = tuple(ImageFont.truetype(str(f), FONT_SIZE_PT)
+
+    all_fonts = tuple(ImageFont.truetype(str(f), FONT_SIZE_PX)
                       for f in getFontPaths(font_path))
     all_glyphs = string.ascii_letters + string.digits
 
-    mkDataset(ds_path, all_fonts, all_glyphs,
-              rotations=ROTATIONS,
-              scales=SCALES)
+    mkDataset(ds_path, all_fonts, all_glyphs, rotations=ROTATIONS, scales=SCALES)
     splitTrainTest(ds_path, 0.2)
+
+
+if __name__ == '__main__':
+    main()

@@ -4,73 +4,99 @@ import pathlib as path
 import random
 import string
 
-import numpy as np
+import keras.layers as layers
+import keras.models as models
+import keras.preprocessing as preprocessing
 import matplotlib.pyplot as plt
 
-import tensorflow as tf
 
-import keras.models as models
-import keras.layers as layers
-import keras.preprocessing as preprocessing
+def main(img_shape=(64, 64)):
+    all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
 
-all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
-IMG_SIZE = (32, 32)
+    train_set_dir = path.Path('dataset') / 'train'
+    test_set_dir = path.Path('dataset') / 'test'
 
-train_ds, validation_ds = preprocessing.image_dataset_from_directory(
-    path.Path('dataset') / 'train',
-    label_mode='categorical',
-    class_names=all_glyphs_classes,
-    validation_split=(0.1 / 0.7),
-    subset='both',
-    shuffle=True,
-    seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-    color_mode='grayscale',
-    image_size=IMG_SIZE,
-)
+    if not train_set_dir.exists():
+        raise FileNotFoundError(train_set_dir)
 
-test_ds = preprocessing.image_dataset_from_directory(
-    path.Path('dataset') / 'test',
-    label_mode='categorical',
-    class_names=all_glyphs_classes,
-    shuffle=True,
-    seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-    color_mode='grayscale',
-    image_size=IMG_SIZE
-)
+    if not test_set_dir.exists():
+        raise FileNotFoundError(test_set_dir)
 
-rescale = models.Sequential([layers.Input((32, 32, 1)), layers.Rescaling(1.0 / 255)])
+    train_ds, validation_ds = preprocessing.image_dataset_from_directory(
+        train_set_dir,
+        label_mode='categorical',
+        class_names=all_glyphs_classes,
+        validation_split=(0.1 / 0.7),
+        subset='both',
+        shuffle=True,
+        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+        color_mode='grayscale',
+        image_size=img_shape,
+    )
 
-model = models.Sequential(
-    [
-        layers.Input(IMG_SIZE+(1,)),
-        layers.Rescaling(1.0 / 255),
+    test_ds = preprocessing.image_dataset_from_directory(
+        test_set_dir,
+        label_mode='categorical',
+        class_names=all_glyphs_classes,
+        shuffle=True,
+        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+        color_mode='grayscale',
+        image_size=img_shape
+    )
 
-        layers.RandomZoom(0.2),
-        layers.RandomFlip(mode='horizontal'),
+    letter_classifier_model = models.Sequential(
+        [
+            layers.Input(img_shape + (1,)),
+            layers.Rescaling(1.0 / 255),
 
-        layers.Conv2D(32, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
+            layers.RandomZoom(0.2),
+            layers.RandomFlip(mode='horizontal'),
 
-        layers.Conv2D(32, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
+            layers.Conv2D(32, (3, 3), activation='relu', strides=2),  # Added for (64, 64) size
+            layers.MaxPooling2D((2, 2)),
 
-        layers.Flatten(),
+            layers.Conv2D(32, (3, 3), activation='relu'),
+            layers.MaxPooling2D((2, 2)),
 
-        layers.Dense(units=128, activation='relu'),
-        layers.Dense(units=len(all_glyphs_classes), activation='softmax')
-    ],
-    name='letter-train-pipe'
-)
+            layers.Conv2D(32, (3, 3), activation='relu'),
+            layers.MaxPooling2D((2, 2)),
 
-model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
-model.summary()
+            layers.Flatten(),
 
-epochs = 150
+            layers.Dense(units=128, activation='relu'),
+            layers.Dense(units=len(all_glyphs_classes), activation='softmax')
+        ],
+        name='letter-train-pipe'
+    )
 
-history = model.fit(train_ds,
-                    epochs=epochs,
-                    validation_data=validation_ds)
+    letter_classifier_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
+    letter_classifier_model.summary()
+
+    epochs = 150
+
+    history = letter_classifier_model.fit(train_ds,
+                                          epochs=epochs,
+                                          validation_data=validation_ds)
+
+    model_save_path = path.Path('letter-clf-model')
+    letter_classifier_model.save(model_save_path)
+
+    plt.plot(history.epoch, history.history['accuracy'], label='accuracy')
+    plt.plot(history.epoch, history.history['val_accuracy'], label='val_accuracy')
+    plt.savefig(model_save_path/'result-accuracy.svg')
+    plt.clf()
+
+    plt.plot(history.epoch, history.history['loss'], label='loss')
+    plt.plot(history.epoch, history.history['val_loss'], label='val_loss')
+    plt.savefig(model_save_path/'result-loss.svg')
+    plt.clf()
+
+    loss, accuracy = letter_classifier_model.evaluate(test_ds)
+
+    with open(model_save_path/'test-set-results.txt', 'w') as outfile:
+        print("Test loss:", loss, file=outfile)
+        print("Test accuracy:", accuracy, file=outfile)
 
 
-model_save_path = path.Path('letter-clf-model')
-model.save(model_save_path)
+if __name__ == '__main__':
+    main()

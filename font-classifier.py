@@ -11,42 +11,20 @@ import keras.models as models
 import keras.saving as saving
 import keras.preprocessing as preprocessing
 
-all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
-all_font_classes = [str(n).zfill(2) for n in range(10)]
 
-IMG_SIZE = (32, 32)
-
-
-def fontClassifier(glyph: str, ds_root: path.Path):
+def fontClassifier(glyph: str, img_size, train_ds, test_ds):
     EPOCHS = 150
-
-    train_ds = preprocessing.image_dataset_from_directory(
-        ds_root / 'train' / glyph,
-        label_mode='categorical',
-        class_names=all_font_classes,
-        shuffle=True,
-        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-        color_mode='grayscale',
-        image_size=IMG_SIZE,
-    )
-
-    test_ds = preprocessing.image_dataset_from_directory(
-        ds_root / 'test' / glyph,
-        label_mode='categorical',
-        class_names=all_font_classes,
-        shuffle=True,
-        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-        color_mode='grayscale',
-        image_size=IMG_SIZE
-    )
 
     font_clf_model = models.Sequential(
         [
-            layers.Input(IMG_SIZE + (1,)),
+            layers.Input(img_size + (1,)),
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
             layers.RandomFlip(mode='horizontal'),
+
+            layers.Conv2D(32, (3, 3), activation='relu'),  # Added for (64, 64) size
+            layers.MaxPooling2D((2, 2)),
 
             layers.Conv2D(32, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
@@ -68,11 +46,38 @@ def fontClassifier(glyph: str, ds_root: path.Path):
     return history, font_clf_model
 
 
-if __name__ == '__main__':
+def main(img_size=(64, 64)):
+    all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
+    all_font_classes = [str(n).zfill(2) for n in range(10)]
+
+    img_size = (32, 32)
     ds_path = path.Path('dataset')
     save_dir = path.Path('font-clf-models')
     save_dir.mkdir(parents=True, exist_ok=True)
 
     for g in all_glyphs_classes:
-        hist, model = fontClassifier(g, ds_path)
+        train_ds = preprocessing.image_dataset_from_directory(
+            ds_path / 'train' / g,
+            label_mode='categorical',
+            class_names=all_font_classes,
+            shuffle=True,
+            seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+            color_mode='grayscale',
+            image_size=img_size,
+        )
+
+        test_ds = preprocessing.image_dataset_from_directory(
+            ds_path / 'test' / g,
+            label_mode='categorical',
+            class_names=all_font_classes,
+            shuffle=True,
+            seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+            color_mode='grayscale',
+            image_size=img_size
+        )
+        hist, model = fontClassifier(g, img_size, train_ds, test_ds)
         saving.save_model(model, str(save_dir / g), save_format='tf')
+
+
+if __name__ == '__main__':
+    main()
