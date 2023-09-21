@@ -46,11 +46,10 @@ def fontClassifier(glyph: str, img_size, train_ds, test_ds):
     return history, font_clf_model
 
 
-def main(img_size=(64, 64)):
+def main(img_shape=(64, 64)):
     all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
     all_font_classes = [str(n).zfill(2) for n in range(10)]
 
-    img_size = (32, 32)
     ds_path = path.Path('dataset')
     save_dir = path.Path('font-clf-models')
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -63,7 +62,7 @@ def main(img_size=(64, 64)):
             shuffle=True,
             seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
             color_mode='grayscale',
-            image_size=img_size,
+            image_size=img_shape,
         )
 
         test_ds = preprocessing.image_dataset_from_directory(
@@ -73,9 +72,9 @@ def main(img_size=(64, 64)):
             shuffle=True,
             seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
             color_mode='grayscale',
-            image_size=img_size
+            image_size=img_shape
         )
-        hist, model = fontClassifier(g, img_size, train_ds, test_ds)
+        hist, model = fontClassifier(g, img_shape, train_ds, test_ds)
         saving.save_model(model, str(save_dir / g), save_format='tf')
 
 

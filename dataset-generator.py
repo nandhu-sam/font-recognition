@@ -116,7 +116,7 @@ def main(img_shape=(64, 64)):
                       for f in getFontPaths(font_path))
     all_glyphs = string.ascii_letters + string.digits
 
-    mkDataset(ds_path, all_fonts, all_glyphs, rotations=ROTATIONS, scales=SCALES)
+    mkDataset(ds_path, all_fonts, all_glyphs, img_shape, rotations=ROTATIONS, scales=SCALES)
     splitTrainTest(ds_path, 0.2)
 
 
