@@ -72,12 +72,5 @@ history = model.fit(train_ds,
                     validation_data=validation_ds)
 
 
-measures = np.c_[(history.history[k] for k in history.history.keys())]
-epoch_count = range(len(measures[0]))
-
 model_save_path = path.Path('letter-clf-model')
 model.save(model_save_path)
-
-plt.plot(epoch_count, measures)
-plt.savefig(str(model_save_path / 'result.png'))
-
