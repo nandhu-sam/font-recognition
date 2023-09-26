@@ -83,12 +83,14 @@ def main(img_shape=(64, 64)):
     model_save_path = path.Path('letter-clf-model')
     saving.save_model(letter_classifier_model, str(model_save_path), save_format='tf')
 
+    loss, accuracy = letter_classifier_model.evaluate(test_ds)
+
     plt.title("Letter Classifier")
     plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
     plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
-    plt.legend()
+    plt.legend(title='Test Accuracy: '+str(accuracy))
     plt.savefig(model_save_path/'result-accuracy.svg')
     plt.clf()
 
@@ -97,11 +99,9 @@ def main(img_shape=(64, 64)):
     plt.plot(history.epoch, history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.legend()
+    plt.legend(title='Test Loss: '+str(loss))
     plt.savefig(model_save_path/'result-loss.svg')
     plt.clf()
-
-    loss, accuracy = letter_classifier_model.evaluate(test_ds)
 
     with open(model_save_path/'test-set-results.txt', 'w') as outfile:
         print("Test loss:", loss, file=outfile)
