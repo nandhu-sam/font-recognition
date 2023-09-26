@@ -14,7 +14,7 @@ import keras.preprocessing as preprocessing
 
 
 def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
-    EPOCHS = 150
+    EPOCHS = 250
 
     font_clf_model = models.Sequential(
         [
