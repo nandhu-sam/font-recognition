@@ -5,6 +5,7 @@ import random
 import string
 
 # import tensorflow as tf
+import matplotlib.pyplot as plt
 
 import keras.layers as layers
 import keras.models as models
@@ -21,6 +22,7 @@ def fontClassifier(glyph: str, img_size, train_ds, test_ds):
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
+            layers.RandomTranslation(0.3, 0.3),
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu'),  # Added for (64, 64) size
@@ -76,6 +78,16 @@ def main(img_shape=(64, 64)):
         )
         hist, model = fontClassifier(g, img_shape, train_ds, test_ds)
         saving.save_model(model, str(save_dir / g), save_format='tf')
+
+        plt.plot(hist.epoch, hist.history['accuracy'], label='accuracy')
+        plt.plot(hist.epoch, hist.history['val_accuracy'], label='val_accuracy')
+        plt.savefig(save_dir / g / ('result-accuracy-'+g+'.svg'))
+        plt.clf()
+
+        plt.plot(hist.epoch, hist.history['loss'], label='loss')
+        plt.plot(hist.epoch, hist.history['val_loss'], label='val_loss')
+        plt.savefig(save_dir / g / ('result-loss'+g+'.svg'))
+        plt.clf()
 
 
 if __name__ == '__main__':

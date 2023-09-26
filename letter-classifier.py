@@ -6,6 +6,7 @@ import string
 
 import keras.layers as layers
 import keras.models as models
+import keras.saving as saving
 import keras.preprocessing as preprocessing
 import matplotlib.pyplot as plt
 
@@ -50,6 +51,7 @@ def main(img_shape=(64, 64)):
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
+            layers.RandomTranslation(0.3, 0.3),
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu', strides=2),  # Added for (64, 64) size
@@ -79,7 +81,7 @@ def main(img_shape=(64, 64)):
                                           validation_data=validation_ds)
 
     model_save_path = path.Path('letter-clf-model')
-    letter_classifier_model.save(model_save_path)
+    saving.save_model(letter_classifier_model, str(model_save_path), save_format='tf')
 
     plt.plot(history.epoch, history.history['accuracy'], label='accuracy')
     plt.plot(history.epoch, history.history['val_accuracy'], label='val_accuracy')
