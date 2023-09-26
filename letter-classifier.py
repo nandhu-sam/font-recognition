@@ -51,7 +51,7 @@ def main(img_shape=(64, 64)):
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
-            layers.RandomTranslation(0.3, 0.3),
+            layers.RandomTranslation(0.2, 0.2),
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu', strides=2),  # Added for (64, 64) size
@@ -83,13 +83,21 @@ def main(img_shape=(64, 64)):
     model_save_path = path.Path('letter-clf-model')
     saving.save_model(letter_classifier_model, str(model_save_path), save_format='tf')
 
-    plt.plot(history.epoch, history.history['accuracy'], label='accuracy')
-    plt.plot(history.epoch, history.history['val_accuracy'], label='val_accuracy')
+    plt.title("Letter Classifier")
+    plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
     plt.savefig(model_save_path/'result-accuracy.svg')
     plt.clf()
 
-    plt.plot(history.epoch, history.history['loss'], label='loss')
-    plt.plot(history.epoch, history.history['val_loss'], label='val_loss')
+    plt.title("Letter Classifier")
+    plt.plot(history.epoch, history.history['loss'], label='Train Loss')
+    plt.plot(history.epoch, history.history['val_loss'], label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
     plt.savefig(model_save_path/'result-loss.svg')
     plt.clf()
 
