@@ -22,7 +22,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
-            layers.RandomTranslation(0.3, 0.3),
+            layers.RandomTranslation(0.2, 0.2),
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu'),  # Added for (64, 64) size
