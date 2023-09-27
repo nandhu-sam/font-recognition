@@ -14,7 +14,7 @@ import keras.preprocessing as preprocessing
 
 
 def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
-    EPOCHS = 250
+    EPOCHS = 350
 
     font_clf_model = models.Sequential(
         [
@@ -26,7 +26,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu'),  # Added for (64, 64) size
-            layers.MaxPooling2D((2, 2)),
+            # layers.MaxPooling2D((2, 2)), -- train with this removed
 
             layers.Conv2D(32, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
