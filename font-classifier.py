@@ -84,8 +84,8 @@ def main(img_shape=(64, 64)):
         loss, accuracy = model.evaluate(test_ds)
 
         plt.title("Font Classifier (" + g + ")")
-        plt.plot(hist.epoch, hist.history['accuracy'], label='Train Accuracy')
         plt.plot(hist.epoch, hist.history['val_accuracy'], label='Validation Accuracy')
+        plt.plot(hist.epoch, hist.history['accuracy'], label='Train Accuracy')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
         plt.legend(title='Test Accuracy: '+str(accuracy))
@@ -93,12 +93,12 @@ def main(img_shape=(64, 64)):
         plt.clf()
 
         plt.title("Font Classifier (" + g + ")")
-        plt.plot(hist.epoch, hist.history['loss'], label='Train Loss')
         plt.plot(hist.epoch, hist.history['val_loss'], label='Validation Loss')
+        plt.plot(hist.epoch, hist.history['loss'], label='Train Loss')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend(title='Test Loss: '+str(loss))
-        plt.savefig(save_dir / g / ('result-loss'+g+'.svg'))
+        plt.savefig(save_dir / g / ('result-loss-'+g+'.svg'))
         plt.clf()
 
         with open(save_dir / g / 'test-set-results.txt', 'w') as outfile:

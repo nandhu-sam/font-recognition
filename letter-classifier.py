@@ -86,8 +86,8 @@ def main(img_shape=(64, 64)):
     loss, accuracy = letter_classifier_model.evaluate(test_ds)
 
     plt.title("Letter Classifier")
-    plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
     plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
+    plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend(title='Test Accuracy: '+str(accuracy))
@@ -95,8 +95,8 @@ def main(img_shape=(64, 64)):
     plt.clf()
 
     plt.title("Letter Classifier")
-    plt.plot(history.epoch, history.history['loss'], label='Train Loss')
     plt.plot(history.epoch, history.history['val_loss'], label='Validation Loss')
+    plt.plot(history.epoch, history.history['loss'], label='Train Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend(title='Test Loss: '+str(loss))
