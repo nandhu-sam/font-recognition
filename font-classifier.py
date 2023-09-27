@@ -13,6 +13,30 @@ import keras.saving as saving
 import keras.preprocessing as preprocessing
 
 
+def fontClassifierSaveHistory(history, save_dir, glyph, test_loss, test_accuracy):
+    plt.title("Font Classifier (" + glyph + ")")
+    plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
+    plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend(title='Test Accuracy: ' + str(test_accuracy))
+    plt.savefig(save_dir / glyph / ('result-accuracy-' + glyph + '.svg'))
+    plt.clf()
+
+    plt.title("Font Classifier (" + glyph + ")")
+    plt.plot(history.epoch, history.history['val_loss'], label='Validation Loss')
+    plt.plot(history.epoch, history.history['loss'], label='Train Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend(title='Test Loss: ' + str(test_loss))
+    plt.savefig(save_dir / glyph / ('result-loss-' + glyph + '.svg'))
+    plt.clf()
+
+    with open(save_dir / glyph / 'test-set-results.txt', 'w') as outfile:
+        print("Test loss:", test_loss, file=outfile)
+        print("Test accuracy:", test_accuracy, file=outfile)
+
+
 def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
     EPOCHS = 350
 
@@ -82,28 +106,9 @@ def main(img_shape=(64, 64)):
         saving.save_model(model, str(save_dir / g), save_format='tf')
 
         loss, accuracy = model.evaluate(test_ds)
+        fontClassifierSaveHistory(hist, save_dir, g, loss, accuracy)
 
-        plt.title("Font Classifier (" + g + ")")
-        plt.plot(hist.epoch, hist.history['val_accuracy'], label='Validation Accuracy')
-        plt.plot(hist.epoch, hist.history['accuracy'], label='Train Accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.legend(title='Test Accuracy: '+str(accuracy))
-        plt.savefig(save_dir / g / ('result-accuracy-'+g+'.svg'))
-        plt.clf()
 
-        plt.title("Font Classifier (" + g + ")")
-        plt.plot(hist.epoch, hist.history['val_loss'], label='Validation Loss')
-        plt.plot(hist.epoch, hist.history['loss'], label='Train Loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend(title='Test Loss: '+str(loss))
-        plt.savefig(save_dir / g / ('result-loss-'+g+'.svg'))
-        plt.clf()
-
-        with open(save_dir / g / 'test-set-results.txt', 'w') as outfile:
-            print("Test loss:", loss, file=outfile)
-            print("Test accuracy:", accuracy, file=outfile)
 
 
 if __name__ == '__main__':

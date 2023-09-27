@@ -84,14 +84,17 @@ def main(img_shape=(64, 64)):
     saving.save_model(letter_classifier_model, str(model_save_path), save_format='tf')
 
     loss, accuracy = letter_classifier_model.evaluate(test_ds)
+    letterClassifierSaveHistory(history, model_save_path, loss, accuracy)
 
+
+def letterClassifierSaveHistory(history, save_dir, test_loss, test_accuracy):
     plt.title("Letter Classifier")
     plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
     plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
-    plt.legend(title='Test Accuracy: '+str(accuracy))
-    plt.savefig(model_save_path/'result-accuracy.svg')
+    plt.legend(title='Test Accuracy: ' + str(test_accuracy))
+    plt.savefig(save_dir / 'result-accuracy.svg')
     plt.clf()
 
     plt.title("Letter Classifier")
@@ -99,13 +102,13 @@ def main(img_shape=(64, 64)):
     plt.plot(history.epoch, history.history['loss'], label='Train Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.legend(title='Test Loss: '+str(loss))
-    plt.savefig(model_save_path/'result-loss.svg')
+    plt.legend(title='Test Loss: ' + str(test_loss))
+    plt.savefig(save_dir / 'result-loss.svg')
     plt.clf()
 
-    with open(model_save_path/'test-set-results.txt', 'w') as outfile:
-        print("Test loss:", loss, file=outfile)
-        print("Test accuracy:", accuracy, file=outfile)
+    with open(save_dir / 'test-set-results.txt', 'w') as outfile:
+        print("Test loss:", test_loss, file=outfile)
+        print("Test accuracy:", test_accuracy, file=outfile)
 
 
 if __name__ == '__main__':
