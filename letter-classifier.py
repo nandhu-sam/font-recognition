@@ -88,6 +88,7 @@ def main(img_shape=(64, 64)):
 
 
 def letterClassifierSaveHistory(history, save_dir, test_loss, test_accuracy):
+
     plt.title("Letter Classifier")
     plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
     plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
