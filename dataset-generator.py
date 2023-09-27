@@ -101,7 +101,7 @@ def getFontPaths(resource_file: path.Path):
 
 def main(img_shape=(64, 64)):
 
-    FONT_SIZE_PX = np.floor(img_shape[0] * 0.8)
+    FONT_SIZE_PX = int(np.floor(img_shape[0] * 0.8))
     ROTATIONS = (-15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0)
     SCALES = (1.0, 0.9, 0.8)
 
