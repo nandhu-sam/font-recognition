@@ -1,6 +1,7 @@
 .idea/
 .ipynb_checkpoints/
 dataset/
+evaluation-plots/
+font-clf-models/
 letter-model/
 letter-clf-model/
-font-clf-models/
