@@ -12,6 +12,10 @@ if [ -d font-clf-models ]
 then rm -rf font-clf-models
 fi
 
+if [ -d evaluation-plots ]
+then rm -rf evaluation-plots
+fi
+
 if [ -d __pycache__ ]
 then rm -rf __pycache__
 fi
