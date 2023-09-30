@@ -38,7 +38,7 @@ def fontClassifierSaveHistory(history, save_dir, glyph, test_loss, test_accuracy
 
 
 def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
-    EPOCHS = 500
+    EPOCHS = 250
 
     font_clf_model = models.Sequential(
         [
@@ -46,7 +46,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
             layers.Rescaling(1.0 / 255),
 
             layers.RandomZoom(0.2),
-            layers.RandomTranslation(0.1, 0.1),
+            layers.RandomTranslation(0.05, 0.05),
             layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (2, 2), activation='relu'),  # Added for (64, 64) size
@@ -66,6 +66,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
         name='font-train-pipe-' + glyph.replace('+', '_')
     )
     font_clf_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
+    font_clf_model.summary()
 
     history = font_clf_model.fit(train_ds, epochs=EPOCHS, validation_data=validation_ds)
 

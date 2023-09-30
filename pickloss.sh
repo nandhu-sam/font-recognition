@@ -1,5 +1,5 @@
 
-# opens only plots in Eye of GNOME
+# opens only loss plots in Eye of GNOME
 
 for arg in "$@"
 do
