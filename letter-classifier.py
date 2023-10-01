@@ -4,11 +4,15 @@ import pathlib as path
 import random
 import string
 
+import numpy as np
+import tensorflow as tf
+
 import keras.layers as layers
 import keras.models as models
 import keras.saving as saving
 import keras.preprocessing as preprocessing
 import matplotlib.pyplot as plt
+import seaborn
 
 
 def main(img_shape=(64, 64)):
@@ -52,7 +56,6 @@ def main(img_shape=(64, 64)):
 
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.2, 0.2),
-            layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (3, 3), activation='relu', strides=2),  # Added for (64, 64) size
             layers.MaxPooling2D((2, 2)),
@@ -74,7 +77,7 @@ def main(img_shape=(64, 64)):
     letter_classifier_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
     letter_classifier_model.summary()
 
-    epochs = 150
+    epochs = 5
 
     history = letter_classifier_model.fit(train_ds,
                                           epochs=epochs,
@@ -85,10 +88,34 @@ def main(img_shape=(64, 64)):
 
     loss, accuracy = letter_classifier_model.evaluate(test_ds)
     letterClassifierSaveHistory(history, model_save_path, loss, accuracy)
+    letterClassifierConfMatrix(letter_classifier_model,
+                               all_glyphs_classes,
+                               test_ds,
+                               accuracy,
+                               model_save_path)
+
+
+def letterClassifierConfMatrix(model, classes, test_ds, test_accuracy, save_dir):
+    classes = list(map(lambda c: c[0], classes))
+    xs, ys = zip(*test_ds.unbatch().as_numpy_iterator())
+    xs = np.array(xs)
+    ys = np.argmax(np.array(ys), axis=-1)
+
+    preds = np.argmax(model.predict(xs), axis=-1)
+    conf_mat = tf.math.confusion_matrix(ys, preds, len(classes)).numpy().T
+    plt.figure(figsize=(12,9))
+    seaborn.heatmap(conf_mat, annot=False,
+                    xticklabels=classes, yticklabels=classes,
+                    square=True, cmap='rocket', label='')
+    plt.xlabel("Actual Class")
+    plt.ylabel("Predicted Class")
+    plt.xticks(rotation=0)
+    plt.legend(title=f'Test Accuracy: {test_accuracy}', labels=[''], loc=(0.0, 1.0))
+    plt.savefig(save_dir / 'confusionmatrix.svg')
+    plt.clf()
 
 
 def letterClassifierSaveHistory(history, save_dir, test_loss, test_accuracy):
-
     plt.title("Letter Classifier")
     plt.plot(history.epoch, history.history['val_accuracy'], label='Validation Accuracy')
     plt.plot(history.epoch, history.history['accuracy'], label='Train Accuracy')
@@ -107,9 +134,11 @@ def letterClassifierSaveHistory(history, save_dir, test_loss, test_accuracy):
     plt.savefig(save_dir / 'result-loss.svg')
     plt.clf()
 
-    with open(save_dir / 'test-set-results.txt', 'w') as outfile:
-        print("Test loss:", test_loss, file=outfile)
-        print("Test accuracy:", test_accuracy, file=outfile)
+    with open(save_dir / 'test-set-loss.txt', 'w') as outfile:
+        print(test_loss, file=outfile)
+
+    with open(save_dir / 'test-set-accuracy.txt', 'w') as outfile:
+        print(test_accuracy, file=outfile)
 
 
 if __name__ == '__main__':

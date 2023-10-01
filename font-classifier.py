@@ -4,8 +4,10 @@ import pathlib as path
 import random
 import string
 
-# import tensorflow as tf
+import numpy as np
 import matplotlib.pyplot as plt
+import seaborn
+import tensorflow as tf
 
 import keras.layers as layers
 import keras.models as models
@@ -20,21 +22,27 @@ def fontClassifierSaveHistory(history, save_dir, glyph, test_loss, test_accuracy
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend(title='Test Accuracy: ' + str(test_accuracy))
-    plt.savefig(save_dir / glyph / ('result-accuracy-' + glyph + '.svg'))
+    plt.savefig(save_dir / glyph / f'result-accuracy-{glyph}.svg')
     plt.clf()
 
-    plt.title("Font Classifier (" + glyph + ")")
+    plt.title(f"Font Classifier ({glyph})")
     plt.plot(history.epoch, history.history['val_loss'], label='Validation Loss')
     plt.plot(history.epoch, history.history['loss'], label='Train Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend(title='Test Loss: ' + str(test_loss))
-    plt.savefig(save_dir / glyph / ('result-loss-' + glyph + '.svg'))
+    plt.savefig(save_dir / glyph / f'result-loss-{glyph}.svg')
     plt.clf()
 
     with open(save_dir / glyph / 'test-set-results.txt', 'w') as outfile:
         print("Test loss:", test_loss, file=outfile)
         print("Test accuracy:", test_accuracy, file=outfile)
+
+    with open(save_dir / glyph / f'test-set-loss-{glyph}.txt', 'w') as outfile:
+        print(test_loss, file=outfile)
+
+    with open(save_dir / glyph / f'test-set-accuracy-{glyph}.txt', 'w') as outfile:
+        print(test_accuracy, file=outfile)
 
 
 def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
@@ -47,16 +55,15 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
 
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.05, 0.05),
-            layers.RandomFlip(mode='horizontal'),
 
             layers.Conv2D(32, (2, 2), activation='relu'),  # Added for (64, 64) size
             # layers.MaxPooling2D((2, 2)), -- train with this removed
 
             layers.Conv2D(32, (2, 2), activation='relu'),
-            #layers.MaxPooling2D((2, 2)),
+            # layers.MaxPooling2D((2, 2)),
 
             layers.Conv2D(32, (2, 2), activation='relu'),
-            #layers.MaxPooling2D((2, 2)),
+            # layers.MaxPooling2D((2, 2)),
 
             layers.Flatten(),
 
@@ -71,6 +78,26 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
     history = font_clf_model.fit(train_ds, epochs=EPOCHS, validation_data=validation_ds)
 
     return history, font_clf_model
+
+
+def fontClassifierConfusionMatrix(model, glyph, test_ds, test_accuracy, save_dir):
+    classes = [str(n).zfill(2) for n in range(10)]
+    xs, ys = zip(*test_ds.unbatch().as_numpy_iterator())
+    xs = np.array(xs)
+    ys = np.argmax(np.array(ys), axis=-1)
+
+    preds = np.argmax(model.predict(xs), axis=-1)
+    conf_mat = tf.math.confusion_matrix(ys, preds, len(classes)).numpy().T
+    plt.figure(figsize=(12, 9))
+    seaborn.heatmap(conf_mat, annot=True,
+                    xticklabels=classes, yticklabels=classes,
+                    square=True, cmap='rocket', label='')
+    plt.xlabel("Actual Class")
+    plt.ylabel("Predicted Class")
+    plt.xticks(rotation=0)
+    plt.legend(title=f'Test Accuracy: {test_accuracy}', labels=[''], loc=(0.0, 1.0))
+    plt.savefig(save_dir / f'confusionmatrix-{glyph}.svg')
+    plt.clf()
 
 
 def main(img_shape=(64, 64)):
@@ -108,8 +135,7 @@ def main(img_shape=(64, 64)):
 
         loss, accuracy = model.evaluate(test_ds)
         fontClassifierSaveHistory(hist, save_dir, g, loss, accuracy)
-
-
+        fontClassifierConfusionMatrix(model, g, test_ds, accuracy, save_dir / g)
 
 
 if __name__ == '__main__':
