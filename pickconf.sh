@@ -4,6 +4,6 @@
 for arg in "$@"
 do
     fname=$(python3 -c "print(hex(ord('$arg'))[2:])")
-    eog "./evaluation-plots/loss/confusionmatrix-$arg-U+$fname.svg" &
+    eog "./evaluation-plots/confusionmatrix/confusionmatrix-$arg-U+$fname.svg" &
 done
 
