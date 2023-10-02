@@ -108,7 +108,7 @@ def letterClassifierConfMatrix(model, classes, test_ds, test_accuracy, save_dir)
                     xticklabels=classes, yticklabels=classes,
                     square=True, cmap='rocket', label='')
 
-    plt.title("Letter Classifier Confusion Matrix")
+    plt.title("Letter Classifier Confusion Matrix", fontsize=20, y=1.1)
     plt.xlabel("Actual Class")
     plt.ylabel("Predicted Class")
     plt.xticks(rotation=0)

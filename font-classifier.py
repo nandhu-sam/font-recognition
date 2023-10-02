@@ -93,7 +93,7 @@ def fontClassifierConfusionMatrix(model, glyph, test_ds, test_accuracy, save_dir
                     xticklabels=classes, yticklabels=classes,
                     square=True, cmap='rocket', label='')
 
-    plt.title(f"Font Classifier ({glyph}) Confusion Matrix")
+    plt.title(f"Font Classifier ({glyph}) Confusion Matrix", fontsize=20, y=1.1)
     plt.xlabel("Actual Class")
     plt.ylabel("Predicted Class")
     plt.xticks(rotation=0)
