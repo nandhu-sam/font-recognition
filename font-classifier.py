@@ -56,17 +56,17 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.05, 0.05),
 
-            layers.Conv2D(32, (2, 2), activation='relu'),
-            layers.Conv2D(32, (2, 2), activation='relu'),
+            layers.Conv2D(32, (3, 3), activation='relu'),
+            layers.Conv2D(32, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
 
 
-            layers.Conv2D(64, (2, 2), activation='relu'),
-            layers.Conv2D(64, (2, 2), activation='relu'),
+            layers.Conv2D(64, (3, 3), activation='relu'),
+            layers.Conv2D(64, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
 
-            layers.Conv2D(128, (2, 2), activation='relu'),
-            layers.Conv2D(128, (2, 2), activation='relu'),
+            layers.Conv2D(128, (3, 3), activation='relu'),
+            layers.Conv2D(128, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
 
             layers.Flatten(),
