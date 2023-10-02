@@ -77,7 +77,7 @@ def main(img_shape=(64, 64)):
     letter_classifier_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
     letter_classifier_model.summary()
 
-    epochs = 5
+    epochs = 150
 
     history = letter_classifier_model.fit(train_ds,
                                           epochs=epochs,
@@ -107,6 +107,8 @@ def letterClassifierConfMatrix(model, classes, test_ds, test_accuracy, save_dir)
     seaborn.heatmap(conf_mat, annot=False,
                     xticklabels=classes, yticklabels=classes,
                     square=True, cmap='rocket', label='')
+
+    plt.title("Letter Classifier Confusion Matrix")
     plt.xlabel("Actual Class")
     plt.ylabel("Predicted Class")
     plt.xticks(rotation=0)

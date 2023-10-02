@@ -92,6 +92,8 @@ def fontClassifierConfusionMatrix(model, glyph, test_ds, test_accuracy, save_dir
     seaborn.heatmap(conf_mat, annot=True,
                     xticklabels=classes, yticklabels=classes,
                     square=True, cmap='rocket', label='')
+
+    plt.title(f"Font Classifier ({glyph}) Confusion Matrix")
     plt.xlabel("Actual Class")
     plt.ylabel("Predicted Class")
     plt.xticks(rotation=0)
