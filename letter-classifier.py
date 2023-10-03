@@ -5,14 +5,15 @@ import random
 import string
 
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn
 import tensorflow as tf
 
 import keras.layers as layers
 import keras.models as models
 import keras.saving as saving
 import keras.preprocessing as preprocessing
-import matplotlib.pyplot as plt
-import seaborn
+
 
 
 def main(img_shape=(64, 64)):
