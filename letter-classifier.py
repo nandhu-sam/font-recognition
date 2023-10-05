@@ -15,7 +15,6 @@ import keras.saving as saving
 import keras.preprocessing as preprocessing
 
 
-
 def main(img_shape=(64, 64)):
     all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
 
@@ -103,15 +102,16 @@ def letterClassifierConfMatrix(model, classes, test_ds, test_accuracy, save_dir)
     ys = np.argmax(np.array(ys), axis=-1)
 
     preds = np.argmax(model.predict(xs), axis=-1)
-    conf_mat = tf.math.confusion_matrix(ys, preds, len(classes)).numpy().T
-    plt.figure(figsize=(12,9))
+    conf_mat = tf.math.confusion_matrix(ys, preds, len(classes)).numpy()
+    plt.figure(figsize=(12, 9))
     seaborn.heatmap(conf_mat, annot=False,
                     xticklabels=classes, yticklabels=classes,
                     square=True, cmap='rocket', label='')
 
     plt.title("Letter Classifier Confusion Matrix", fontsize=20, y=1.1)
-    plt.xlabel("Actual Class")
-    plt.ylabel("Predicted Class")
+    plt.xlabel("Predicted Class")
+    plt.ylabel("Actual Class")
+
     plt.xticks(rotation=0)
     plt.legend(title=f'Test Accuracy: {test_accuracy}', labels=[''], loc=(0.0, 1.0))
     plt.savefig(save_dir / 'confusionmatrix.svg')
