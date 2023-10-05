@@ -51,7 +51,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
     font_clf_model = models.Sequential(
         [
             layers.Input(img_size + (1,)),
-            layers.Rescaling(1.0 / 255),
+            layers.Rescaling(1.0 / 255, dtype=tf.dtypes.float64),
 
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.05, 0.05),
