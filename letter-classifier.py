@@ -53,7 +53,7 @@ def main(img_shape=(64, 64)):
     letter_classifier_model = models.Sequential(
         [
             layers.Input(img_shape + (1,)),
-            layers.Rescaling(1.0 / 255),
+            layers.Rescaling(1.0 / 255, dtype=tf.dtypes.float64),
 
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.2, 0.2),
