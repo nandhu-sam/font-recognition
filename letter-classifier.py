@@ -75,7 +75,7 @@ def main(img_shape=(64, 64)):
         name='letter-train-pipe'
     )
 
-    letter_classifier_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
+    letter_classifier_model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
     letter_classifier_model.summary()
 
     epochs = 150
