@@ -58,7 +58,7 @@ def main(img_shape=(64, 64)):
             layers.RandomZoom(0.2),
             layers.RandomTranslation(0.2, 0.2),
 
-            layers.Conv2D(32, (3, 3), activation='relu', strides=2),  # Added for (64, 64) size
+            layers.Conv2D(32, (3, 3), activation='relu'),  # Added for (64, 64) size
             layers.MaxPooling2D((2, 2)),
 
             layers.Conv2D(32, (3, 3), activation='relu'),
