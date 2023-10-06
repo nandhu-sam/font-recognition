@@ -135,7 +135,7 @@ def trainFontClassifierModel(glyph, ds_path, glyph_classes, font_classes, img_sh
     fontClassifierConfusionMatrix(model, glyph, test_ds, accuracy, save_dir / glyph)
 
 
-def main(img_shape=(64, 64), parallel=True):
+def main(img_shape=(64, 64)):
     all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
     all_font_classes = [str(n).zfill(2) for n in range(10)]
 
