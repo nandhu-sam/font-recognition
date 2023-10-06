@@ -20,3 +20,4 @@ done
 
 wait
 ./copyresults.sh
+tar -czvf plots.tar.gz evaluation-plots
