@@ -3,6 +3,7 @@
 import pathlib as path
 import random
 import string
+import joblib
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -60,7 +61,6 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
             layers.Conv2D(32, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
 
-
             layers.Conv2D(64, (3, 3), activation='relu'),
             layers.Conv2D(64, (3, 3), activation='relu'),
             layers.MaxPooling2D((2, 2)),
@@ -106,7 +106,37 @@ def fontClassifierConfusionMatrix(model, glyph, test_ds, test_accuracy, save_dir
     plt.clf()
 
 
-def main(img_shape=(64, 64)):
+def trainFontClassifierModel(glyph, ds_path, glyph_classes, font_classes, img_shape, save_dir):
+    train_ds, validation_ds = preprocessing.image_dataset_from_directory(
+        ds_path / 'train' / glyph,
+        label_mode='categorical',
+        class_names=font_classes,
+        validation_split=(0.1 / 0.7),
+        subset='both',
+        shuffle=True,
+        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+        color_mode='grayscale',
+        image_size=img_shape,
+    )
+
+    test_ds = preprocessing.image_dataset_from_directory(
+        ds_path / 'test' / glyph,
+        label_mode='categorical',
+        class_names=font_classes,
+        shuffle=True,
+        seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
+        color_mode='grayscale',
+        image_size=img_shape
+    )
+    hist, model = fontClassifier(glyph, img_shape, train_ds, validation_ds)
+    saving.save_model(model, str(save_dir / glyph), save_format='tf')
+
+    loss, accuracy = model.evaluate(test_ds)
+    fontClassifierSaveHistory(hist, save_dir, glyph, loss, accuracy)
+    fontClassifierConfusionMatrix(model, glyph, test_ds, accuracy, save_dir / glyph)
+
+
+def main(img_shape=(64, 64), parallel=True):
     all_glyphs_classes = [c + '-U+' + hex(ord(c))[2:] for c in string.ascii_letters + string.digits]
     all_font_classes = [str(n).zfill(2) for n in range(10)]
 
@@ -114,34 +144,17 @@ def main(img_shape=(64, 64)):
     save_dir = path.Path('font-clf-models')
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    for g in all_glyphs_classes:
-        train_ds, validation_ds = preprocessing.image_dataset_from_directory(
-            ds_path / 'train' / g,
-            label_mode='categorical',
-            class_names=all_font_classes,
-            validation_split=(0.1 / 0.7),
-            subset='both',
-            shuffle=True,
-            seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-            color_mode='grayscale',
-            image_size=img_shape,
+    if parallel:
+        parallel = joblib.Parallel(n_jobs=15)
+        delayed_fn = joblib.delayed(trainFontClassifierModel)
+        parallel(
+            delayed_fn(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
+            for g in all_glyphs_classes
         )
-
-        test_ds = preprocessing.image_dataset_from_directory(
-            ds_path / 'test' / g,
-            label_mode='categorical',
-            class_names=all_font_classes,
-            shuffle=True,
-            seed=random.SystemRandom().randint(0, 2 ** 32 - 1),
-            color_mode='grayscale',
-            image_size=img_shape
-        )
-        hist, model = fontClassifier(g, img_shape, train_ds, validation_ds)
-        saving.save_model(model, str(save_dir / g), save_format='tf')
-
-        loss, accuracy = model.evaluate(test_ds)
-        fontClassifierSaveHistory(hist, save_dir, g, loss, accuracy)
-        fontClassifierConfusionMatrix(model, g, test_ds, accuracy, save_dir / g)
+    else:
+        for g in all_glyphs_classes:
+            parallel = joblib.Parallel()
+            parallel(trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir))
 
 
 if __name__ == '__main__':
