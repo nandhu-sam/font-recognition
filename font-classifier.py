@@ -3,13 +3,12 @@
 import pathlib as path
 import random
 import string
-import joblib
 
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
-import tensorflow as tf
 
+import tensorflow as tf
 import keras.layers as layers
 import keras.models as models
 import keras.saving as saving
@@ -144,16 +143,8 @@ def main(img_shape=(64, 64), parallel=True):
     save_dir = path.Path('font-clf-models')
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    if parallel:
-        parallel = joblib.Parallel(n_jobs=3)
-        delayed_fn = joblib.delayed(trainFontClassifierModel)
-        parallel(
-            delayed_fn(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
-            for g in all_glyphs_classes
-        )
-    else:
-        for g in all_glyphs_classes:
-            trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
+    for g in all_glyphs_classes:
+        trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
 
 
 if __name__ == '__main__':
