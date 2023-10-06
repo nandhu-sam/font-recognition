@@ -145,7 +145,7 @@ def main(img_shape=(64, 64), parallel=True):
     save_dir.mkdir(parents=True, exist_ok=True)
 
     if parallel:
-        parallel = joblib.Parallel(n_jobs=15)
+        parallel = joblib.Parallel(n_jobs=3)
         delayed_fn = joblib.delayed(trainFontClassifierModel)
         parallel(
             delayed_fn(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
@@ -153,8 +153,7 @@ def main(img_shape=(64, 64), parallel=True):
         )
     else:
         for g in all_glyphs_classes:
-            parallel = joblib.Parallel()
-            parallel(trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir))
+            trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
 
 
 if __name__ == '__main__':
