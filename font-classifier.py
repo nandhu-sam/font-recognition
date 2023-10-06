@@ -80,8 +80,7 @@ def fontClassifier(glyph: str, img_size, train_ds, validation_ds):
     font_clf_model.compile(loss='categorical_crossentropy', metrics=['accuracy'])
     font_clf_model.summary()
 
-    history = font_clf_model.fit(train_ds, epochs=EPOCHS, validation_data=validation_ds)
-
+    history = font_clf_model.fit(train_ds, epochs=EPOCHS, validation_data=validation_ds, verbose=2)
     return history, font_clf_model
 
 

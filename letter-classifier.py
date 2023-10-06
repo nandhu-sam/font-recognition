@@ -81,7 +81,8 @@ def main(img_shape=(64, 64)):
 
     history = letter_classifier_model.fit(train_ds,
                                           epochs=epochs,
-                                          validation_data=validation_ds)
+                                          validation_data=validation_ds,
+                                          verbose=2)
 
     model_save_path = path.Path('letter-clf-model')
     saving.save_model(letter_classifier_model, str(model_save_path), save_format='tf')
