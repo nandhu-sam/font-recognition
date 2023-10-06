@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys
+
 import pathlib as path
 import random
 import string
@@ -143,8 +145,13 @@ def main(img_shape=(64, 64)):
     save_dir = path.Path('font-clf-models')
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    for g in all_glyphs_classes:
-        trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
+    if len(sys.argv) < 2:
+        for g in all_glyphs_classes:
+            trainFontClassifierModel(g, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
+    else:
+        c = sys.argv[1][0]
+        glyph = c + '-U+' + hex(ord(c))[2:]
+        trainFontClassifierModel(glyph, ds_path, all_glyphs_classes, all_font_classes, img_shape, save_dir)
 
 
 if __name__ == '__main__':
