@@ -5,21 +5,18 @@ class2=$(python3 -c 'import string; print(string.ascii_uppercase)')
 class3=$(python3 -c 'import string; print(string.digits)')
 
 ./dataset-generator.py
+./letter-classifier.py &
 
-
-for class in class1 class2
+for class in class1 class2 class3
 do
+  all_running="";
   for (( i=0; i<${#class}; i++ ));
   do
     ./font-classifier.py "${class:$i:1}" &
+    all_running="$all_running $!"
   done
-  wait
+  wait $all_running
 done
 
-./letter-classifier.py &
-for (( i=0; i<${#class3}; i++ ));
-  do
-    ./font-classifier.py "${class3:$i:1}" &
-  done
 wait
 ./copyresults.sh
