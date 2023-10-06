@@ -1,12 +1,18 @@
 #!/bin/bash
 
-classes=$(python3 -c 'import string; print(string.ascii_letters + string.digits)')
+class1=$(python3 -c 'import string; print(string.ascii_lowercase)')
+class2=$(python3 -c 'import string; print(string.ascii_uppercase)')
+class3=$(python3 -c 'import string; print(string.digits)')
+
 ./dataset-generator.py
 ./letter-classifier.py &
-for (( i=0; i<${#classes}; i++ ));
+for class in class1, class2, class3
 do
-  ./font-classifier.py "${classes:$i:1}" &
+  for (( i=0; i<${#class}; i++ ));
+  do
+    ./font-classifier.py "${class:$i:1}" &
+  done
+  wait
 done
 wait
 ./copyresults.sh
-)
