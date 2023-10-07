@@ -36,6 +36,7 @@ def fontClassifierSaveHistory(history, save_dir, glyph, test_loss, test_accuracy
     plt.savefig(save_dir / glyph / f'result-loss-{glyph}.svg')
     plt.clf()
 
+
     with open(save_dir / glyph / 'test-set-results.txt', 'w') as outfile:
         print("Test loss:", test_loss, file=outfile)
         print("Test accuracy:", test_accuracy, file=outfile)

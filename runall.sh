@@ -7,7 +7,7 @@ class3=$(python3 -c 'import string; print(string.digits)')
 ./dataset-generator.py
 ./letter-classifier.py &
 
-for class in class1 class2 class3
+for class in $class1 $class2 $class3
 do
   all_running="";
   for (( i=0; i<${#class}; i++ ));
